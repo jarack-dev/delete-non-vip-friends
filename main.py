@@ -1,12 +1,12 @@
+# import mouseinfo
 import os
 import signal
 import sys
 import time
-import mouseinfo
 import pytesseract
 import pyautogui
 import re
-from PIL import ImageGrab
+from PIL import ImageGrab, ImageEnhance
 from pynput import keyboard
 from difflib import SequenceMatcher
 
@@ -30,12 +30,17 @@ coordinates = {
 # screenshot = pyautogui.screenshot(region=ss_coordinates)
 
 
-def convert_screenshot_to_string(ss_name, ss_coordinates, psm=7):
-    screenshot = ImageGrab.grab(bbox=ss_coordinates)
-    screenshot.save(ss_name + '.png')
-    parsed_text = pytesseract.image_to_string(screenshot, lang='eng', config=f'--psm {psm}')
+def convert_screenshot_to_string(ss_name, ss_coordinates, is_square, psm=7):
+    resize_resolution = (200, 200) if is_square else (400, 100)
+    screenshot = ImageGrab.grab(bbox=ss_coordinates).resize(resize_resolution)
+    enhanced_screenshot = ImageEnhance.Contrast(screenshot).enhance(3)
+    parsed_text = pytesseract.image_to_string(enhanced_screenshot, lang='eng', config=f'--psm {psm}')
+
     if debug:
+        screenshot.save(ss_name + '.png')
+        enhanced_screenshot.save(ss_name + "_enhanced.png")
         print("parsed text: " + parsed_text)
+        print("level of confidence:", pytesseract.image_to_data(enhanced_screenshot, lang='eng', config=f'--psm {psm}', output_type="dict")["conf"])
     return parsed_text
 
 
@@ -96,7 +101,7 @@ def go_to_next_friend(num_vip_friends):
 
 def check_and_delete_friends():
     num_vip_friends = 0
-    current_count_string = (re.sub(r"\D", "", convert_screenshot_to_string("friendCount", coordinates["friendCount"])))
+    current_count_string = (re.sub(r"\D", "", convert_screenshot_to_string("friendCount", coordinates["friendCount"], True)))
     current_count = int(current_count_string) if current_count_string.isdecimal() else -1
     desired_count = get_line_count("vip_ids.txt")
 
@@ -111,7 +116,7 @@ def check_and_delete_friends():
         (x, y) = pyautogui.position()
         pyautogui.click(coordinates["goToFriend"])
         pyautogui.moveTo(x, y)
-        fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"]))
+        fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"], False))
         index = 0
         while fc == "" or len(fc) < 4:
             if index == 50:
@@ -119,7 +124,7 @@ def check_and_delete_friends():
                 sys.exit(-1)
             index += 1
             psm = 6 if index % 2 == 0 else 7
-            fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"]), psm)
+            fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"]), False, psm)
         print(fc)
         if is_vip_friend("vip_ids.txt", fc):
             pyautogui.click(coordinates["clickOutOfProfile"])
