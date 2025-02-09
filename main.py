@@ -15,7 +15,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 pyautogui.PAUSE = 1
 script_paused = False
 coordinates = {
-    "friendCount": (125, 110, 145, 130),
+    "friendCount": (125, 110, 146.15, 130),
     "friendCode": (175, 70, 270, 95),
     "goToFriend": (150, 200),
     "removeFriend": (150, 410),
@@ -124,7 +124,7 @@ def check_and_delete_friends():
                 sys.exit(-1)
             index += 1
             psm = 6 if index % 2 == 0 else 7
-            fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"]), False, psm)
+            fc = re.sub(r"\D", "", convert_screenshot_to_string("friendCode", coordinates["friendCode"], False, psm))
         print(fc)
         if is_vip_friend("vip_ids.txt", fc):
             pyautogui.click(coordinates["clickOutOfProfile"])
