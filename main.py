@@ -162,7 +162,6 @@ if __name__ == '__main__':
         get_user_language()
         validate_file()
         initialize_logger()
-        importlib.reload(setup)
         check_and_delete_friends()
     except KeyboardInterrupt:
         setup.logger.error("There was a keyboard interrupt. Exiting...")

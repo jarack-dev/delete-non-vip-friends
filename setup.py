@@ -49,11 +49,22 @@ def get_user_language():
     text = tk.Label(root, text="Select a Language", pady=10)
     text.pack()
 
+    def set_language(_event):
+        global selected_language
+        inputted_language = language_select.get()
+        if inputted_language == "":
+            submit_button.state(["disabled"])
+        else:
+            selected_language = inputted_language
+            submit_button.state(["!disabled"])
+
     language_select = ttk.Combobox(root, state="readonly", values=supported_languages)
+    # language_select.bind("<<ComboboxSelected>>", set_language)
     language_select.pack()
 
     debug_checkbox = ttk.Checkbutton(text="Debug Mode")
     debug_checkbox.pack(pady=10)
+    debug_checkbox.state(['!alternate'])
 
     frame = tk.Frame(root)
     frame.pack(padx=10, pady=10, expand=True)
@@ -61,13 +72,12 @@ def get_user_language():
     def get_selected_option():
         global selected_language, is_debug_mode
         selected_language = language_select.get()
-        is_debug_mode = debug_checkbox.getboolean()
+        is_debug_mode = debug_checkbox.instate(['selected'])
         root.destroy()
-
-
 
     cancel_button = ttk.Button(frame, text="Cancel", command=sys.exit)
     submit_button = ttk.Button(frame, text="Ok", command=get_selected_option)
+
     cancel_button.pack(side=tk.LEFT, padx=10)
     submit_button.pack(side=tk.RIGHT, padx=10)
     sv_ttk.set_theme("dark")
