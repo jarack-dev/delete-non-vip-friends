@@ -187,17 +187,13 @@ def check_and_delete_friends():
         pyautogui.moveTo(x, y)
         fc = re.sub(r"\D", "",
                     convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle))
-        index = 0
-        while fc == "" or len(fc) < 4:
-            if index == 50:
-                logger.error("could not accurately determine the friend code. Exiting...")
-                sys.exit(-1)
-            index += 1
-            psm = 6 if index % 2 == 0 else 7
-            fc = re.sub(r"\D", "",
-                        convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle, psm))
+        if fc == "" or len(fc) < 4:
+            logger.error("could not accurately determine the friend code. Exiting...")
+            sys.exit(-1)
+
         if setup.is_debug_mode:
             logger.debug(fc)
+
         if is_vip_friend("vip_ids.txt", fc):
             pyautogui.click(coordinates["clickOutOfProfile"])
             num_vip_friends += 1
@@ -205,6 +201,7 @@ def check_and_delete_friends():
         else:
             delete_friend()
             current_count -= 1
+
         pyautogui.moveTo(x, y)
 
     if not use_image_gen:
