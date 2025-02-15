@@ -80,12 +80,12 @@ def is_vip_friend(file_path, friend_code):
     with open(file_path, 'r') as file:
         for line in file:
             friend_code_from_file = re.sub(r"\D", "", line)
-            similarity_score = SequenceMatcher(None, friend_code, friend_code_from_file).ratio()
+            similarity_score = SequenceMatcher(None, friend_code, friend_code_from_file).ratio() * 100
             if setup.is_debug_mode:
-                logger.debug(f"{friend_code} and {friend_code_from_file} are {similarity_score * 100}% similar")
+                logger.debug(f"{friend_code} and {friend_code_from_file} are {similarity_score}% similar")
 
-            if similarity_score > 0.6:
-                logger.info(f"{friend_code} and {friend_code_from_file} are {similarity_score * 100}% similar, they"
+            if similarity_score > 60:
+                logger.info(f"{friend_code} and {friend_code_from_file} are {similarity_score}% similar, they"
                             " are a vip")
                 return True
     logger.info("they are not a vip, the similarity scores were not high enough.")
@@ -95,6 +95,7 @@ def is_vip_friend(file_path, friend_code):
 def delete_friend():
     setup.logger.info("deleting friend...")
     pyautogui.click(coordinates["removeFriend"])
+    time.sleep(3)
     pyautogui.click(coordinates["confirmDeleteFriend"])
     pyautogui.click(coordinates["clickOutOfProfile"])
 
@@ -136,21 +137,21 @@ def is_end_of_list():
     global friend_name
     last_friend_name = re.sub("[^0-9a-zA-Z]+", "", convert_screenshot_to_string("lastFriendName",
                                                                                 coordinates["getLastFriend"],
-                                                                                ImageType.LongRectangle, psm=6))
-    similarity_score = SequenceMatcher(None, friend_name, last_friend_name).ratio()
+                                                                                ImageType.LongRectangle, psm=11))
+    similarity_score = SequenceMatcher(None, friend_name, last_friend_name).ratio() * 100
 
     if last_friend_name == "":
         return False
     friend_name = last_friend_name
 
-    if similarity_score > 0.6:
+    if similarity_score > 75:
         if setup.is_debug_mode:
             setup.logger.info(
-                f"the friend names are {similarity_score * 100}% similar, you've reached the end of the list.")
+                f"the friend names are {similarity_score}% similar, you've reached the end of the list.")
         return True
     else:
         if setup.is_debug_mode:
-            setup.logger.info(f"the friend names are {similarity_score * 100}% similar, you still have a ways to go!")
+            setup.logger.info(f"the friend names are {similarity_score}% similar, you still have a ways to go!")
         return False
 
 
@@ -176,7 +177,7 @@ def check_and_delete_friends():
     if not use_image_gen:
         get_current_count()
         desired_count = get_line_count("vip_ids.txt")
-
+    retry_attempts = 0
     while not is_list_end:
         if use_image_gen and is_list_end or not use_image_gen and current_count <= desired_count:
             break
@@ -184,12 +185,16 @@ def check_and_delete_friends():
             time.sleep(5)
         (x, y) = pyautogui.position()
         pyautogui.click(coordinates["goToFriend"])
-        pyautogui.moveTo(x, y)
         fc = re.sub(r"\D", "",
                     convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle))
-        if fc == "" or len(fc) < 4:
+
+        if fc == "" or len(fc) < 4 and retry_attempts > 5:
             logger.error("could not accurately determine the friend code. Exiting...")
             sys.exit(-1)
+        elif fc == "" or len(fc) < 4:
+            retry_attempts += 1
+            logger.error("could not accurately determine the friend code, retrying...")
+            continue
 
         if setup.is_debug_mode:
             logger.debug(fc)
