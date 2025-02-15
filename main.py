@@ -221,3 +221,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         setup.logger.error("There was a keyboard interrupt. Exiting...")
         sys.exit()
+    except Exception as e:
+        setup.logger.error(e)
+
