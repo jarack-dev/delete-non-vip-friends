@@ -3,3 +3,4 @@ vip_ids.txt
 build/*
 .idea/*
 *.spec
+*.log
