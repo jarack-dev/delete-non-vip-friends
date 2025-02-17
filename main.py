@@ -48,7 +48,6 @@ coordinates = {
 
 
 def get_resize_resolution(image_type):
-    selected_language = setup.selected_language
     if image_type == ImageType.Square:
         return 200, 200
     elif image_type == ImageType.Rectangle:
@@ -177,7 +176,7 @@ def check_and_delete_friends():
         get_current_count()
         desired_count = get_line_count("vip_ids.txt")
     retry_attempts = 0
-    while not is_list_end:
+    while True:
         if use_image_gen and is_list_end or not use_image_gen and current_count <= desired_count:
             break
         while script_paused:
