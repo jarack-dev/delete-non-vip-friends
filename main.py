@@ -188,11 +188,12 @@ def check_and_delete_friends():
         fc = re.sub(r"\D", "",
                     convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle))
 
-        if fc == "" or len(fc) < 4 and retry_attempts > 5:
+        if (fc == "" or len(fc) < 4) and retry_attempts > 5:
             logger.error("could not accurately determine the friend code. Exiting...")
             sys.exit(-1)
         elif fc == "" or len(fc) < 4:
             retry_attempts += 1
+            coordinates["goToFriend"] = coordinates["goToFriend"][0], coordinates["goToFriend"][1] - 5
             logger.error("could not accurately determine the friend code, retrying...")
             continue
 
