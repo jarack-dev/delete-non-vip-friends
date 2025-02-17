@@ -95,7 +95,6 @@ def is_vip_friend(file_path, friend_code):
 def delete_friend():
     setup.logger.info("deleting friend...")
     pyautogui.click(coordinates["removeFriend"])
-    time.sleep(3)
     pyautogui.click(coordinates["confirmDeleteFriend"])
     pyautogui.click(coordinates["clickOutOfProfile"])
 
