@@ -169,12 +169,14 @@ def get_current_count():
 
 def check_and_delete_friends():
     global is_list_end, current_count, desired_count
-    use_image_gen = setup.use_image_gen_end_condition
+    desired_count = get_line_count("vip_ids.txt")
+    use_image_gen = setup.use_image_gen_end_condition if desired_count > 0 else False
     logger = setup.logger
     num_vip_friends = 0
+    
     if not use_image_gen:
         get_current_count()
-        desired_count = get_line_count("vip_ids.txt")
+
     retry_attempts = 0
     while True:
         if use_image_gen and is_list_end or not use_image_gen and current_count <= desired_count:
@@ -183,8 +185,9 @@ def check_and_delete_friends():
             time.sleep(5)
         (x, y) = pyautogui.position()
         pyautogui.click(coordinates["goToFriend"])
+        psm = 7 if retry_attempts % 2 == 0 else 6
         fc = re.sub(r"\D", "",
-                    convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle))
+                    convert_screenshot_to_string("friendCode", coordinates["friendCode"], ImageType.Rectangle, psm=psm))
 
         if (fc == "" or len(fc) < 4) and retry_attempts > 5:
             logger.error("could not accurately determine the friend code. Exiting...")
@@ -194,6 +197,8 @@ def check_and_delete_friends():
             coordinates["goToFriend"] = coordinates["goToFriend"][0], coordinates["goToFriend"][1] - 5
             logger.error("could not accurately determine the friend code, retrying...")
             continue
+        else:
+            retry_attempts = 0
 
         if setup.is_debug_mode:
             logger.debug(fc)
